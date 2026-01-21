@@ -1,0 +1,95 @@
+#include <iostream>
+using namespace std;
+
+const int TABLE_SIZE = 10;
+
+// Node for linked list
+struct Node {
+    int productID;
+    int stock;
+    Node* next;
+};
+
+// Hash Table (array of linked lists)
+Node* table[TABLE_SIZE];
+
+// Hash Function
+int hashFunction(int key) {
+    return key % TABLE_SIZE;
+}
+
+// Insert function
+void insert(int productID, int stock) {
+    int index = hashFunction(productID);
+
+    Node* newNode = new Node();
+    newNode->productID = productID;
+    newNode->stock = stock;
+    newNode->next = table[index];
+
+    table[index] = newNode;
+    cout << "Product inserted successfully.\n";
+}
+
+// Search function
+void search(int productID) {
+    int index = hashFunction(productID);
+    Node* temp = table[index];
+
+    while (temp != NULL) {
+        if (temp->productID == productID) {
+            cout << "Product Found. Stock = " << temp->stock << endl;
+            return;
+        }
+        temp = temp->next;
+    }
+    cout << "Product not found.\n";
+}
+
+// Display function
+void display() {
+    for (int i = 0; i < TABLE_SIZE; i++) {
+        cout << "Index " << i << ": ";
+        Node* temp = table[i];
+        while (temp != NULL) {
+            cout << "[" << temp->productID << ", " << temp->stock << "] -> ";
+            temp = temp->next;
+        }
+        cout << "NULL\n";
+    }
+}
+
+// Menu
+int main() {
+    for (int i = 0; i < TABLE_SIZE; i++)
+        table[i] = NULL;
+
+    int choice, id, stock;
+
+    do {
+        cout << "\n--- Separate Chaining Menu ---\n";
+        cout << "1. Insert\n2. Search\n3. Display\n4. Exit\n";
+        cout << "Enter choice: ";
+        cin >> choice;
+
+        switch (choice) {
+            case 1:
+                cout << "Enter Product ID and Stock: ";
+                cin >> id >> stock;
+                insert(id, stock);
+                break;
+
+            case 2:
+                cout << "Enter Product ID: ";
+                cin >> id;
+                search(id);
+                break;
+
+            case 3:
+                display();
+                break;
+        }
+    } while (choice != 4);
+
+    return 0;
+}
