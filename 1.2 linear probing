@@ -1,0 +1,93 @@
+#include <iostream>
+using namespace std;
+
+const int SIZE = 10;
+
+int productID[SIZE];
+int stock[SIZE];
+
+// Initialize table
+void initialize() {
+    for (int i = 0; i < SIZE; i++)
+        productID[i] = -1;
+}
+
+// Hash Function
+int hashFunction(int key) {
+    return key % SIZE;
+}
+
+// Insert
+void insert(int id, int stk) {
+    int index = hashFunction(id);
+
+    while (productID[index] != -1) {
+        index = (index + 1) % SIZE;
+    }
+
+    productID[index] = id;
+    stock[index] = stk;
+    cout << "Product inserted successfully.\n";
+}
+
+// Search
+void search(int id) {
+    int index = hashFunction(id);
+    int start = index;
+
+    while (productID[index] != -1) {
+        if (productID[index] == id) {
+            cout << "Product Found. Stock = " << stock[index] << endl;
+            return;
+        }
+        index = (index + 1) % SIZE;
+
+        if (index == start)
+            break;
+    }
+    cout << "Product not found.\n";
+}
+
+// Display
+void display() {
+    for (int i = 0; i < SIZE; i++) {
+        if (productID[i] != -1)
+            cout << i << " -> " << productID[i] << " (" << stock[i] << ")\n";
+        else
+            cout << i << " -> EMPTY\n";
+    }
+}
+
+// Menu
+int main() {
+    initialize();
+
+    int choice, id, stk;
+
+    do {
+        cout << "\n--- Linear Probing Menu ---\n";
+        cout << "1. Insert\n2. Search\n3. Display\n4. Exit\n";
+        cout << "Enter choice: ";
+        cin >> choice;
+
+        switch (choice) {
+            case 1:
+                cout << "Enter Product ID and Stock: ";
+                cin >> id >> stk;
+                insert(id, stk);
+                break;
+
+            case 2:
+                cout << "Enter Product ID: ";
+                cin >> id;
+                search(id);
+                break;
+
+            case 3:
+                display();
+                break;
+        }
+    } while (choice != 4);
+
+    return 0;
+}
