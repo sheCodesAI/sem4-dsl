@@ -1,95 +1,96 @@
 #include <iostream>
 using namespace std;
 
-const int TABLE_SIZE = 10;
-
-// Node for linked list
 struct Node {
-    int productID;
-    int stock;
+    int id;
+    int qty;
     Node* next;
 };
 
-// Hash Table (array of linked lists)
-Node* table[TABLE_SIZE];
+class HashChain {
+    int size;
+    Node* table[10];
 
-// Hash Function
-int hashFunction(int key) {
-    return key % TABLE_SIZE;
-}
-
-// Insert function
-void insert(int productID, int stock) {
-    int index = hashFunction(productID);
-
-    Node* newNode = new Node();
-    newNode->productID = productID;
-    newNode->stock = stock;
-    newNode->next = table[index];
-
-    table[index] = newNode;
-    cout << "Product inserted successfully.\n";
-}
-
-// Search function
-void search(int productID) {
-    int index = hashFunction(productID);
-    Node* temp = table[index];
-
-    while (temp != NULL) {
-        if (temp->productID == productID) {
-            cout << "Product Found. Stock = " << temp->stock << endl;
-            return;
+public:
+    HashChain(int s) {
+        size = s;
+        for(int i = 0; i < size; i++) {
+            table[i] = NULL;
         }
-        temp = temp->next;
     }
-    cout << "Product not found.\n";
-}
 
-// Display function
-void display() {
-    for (int i = 0; i < TABLE_SIZE; i++) {
-        cout << "Index " << i << ": ";
-        Node* temp = table[i];
-        while (temp != NULL) {
-            cout << "[" << temp->productID << ", " << temp->stock << "] -> ";
+    int hash(int key) {
+        return key % size;
+    }
+
+    void insert(int key, int q) {
+        int index = hash(key);
+
+        Node* newNode = new Node();
+        newNode->id = key;
+        newNode->qty = q;
+        newNode->next = table[index]; // insert at beginning
+
+        table[index] = newNode;
+    }
+
+    void search(int key) {
+        int index = hash(key);
+        Node* temp = table[index];
+
+        while(temp != NULL) {
+            if(temp->id == key) {
+                cout << "Found ID " << key << " with Qty " << temp->qty << endl;
+                return;
+            }
             temp = temp->next;
         }
-        cout << "NULL\n";
+
+        cout << "ID not found\n";
     }
-}
 
-// Menu
+    void display() {
+        for(int i = 0; i < size; i++) {
+            cout << i << " -> ";
+            Node* temp = table[i];
+
+            while(temp != NULL) {
+                cout << "[" << temp->id << "," << temp->qty << "] -> ";
+                temp = temp->next;
+            }
+            cout << "NULL\n";
+        }
+    }
+};
+
 int main() {
-    for (int i = 0; i < TABLE_SIZE; i++)
-        table[i] = NULL;
-
-    int choice, id, stock;
+    HashChain h(5);
+    int choice, id, qty;
 
     do {
-        cout << "\n--- Separate Chaining Menu ---\n";
-        cout << "1. Insert\n2. Search\n3. Display\n4. Exit\n";
-        cout << "Enter choice: ";
+        cout << "\n1.Insert\n2.Search\n3.Display\n4.Exit\n";
         cin >> choice;
 
-        switch (choice) {
+        switch(choice) {
             case 1:
-                cout << "Enter Product ID and Stock: ";
-                cin >> id >> stock;
-                insert(id, stock);
+                cout << "Enter ID: ";
+                cin >> id;
+                cout << "Enter Qty: ";
+                cin >> qty;
+                h.insert(id, qty);
                 break;
 
             case 2:
-                cout << "Enter Product ID: ";
+                cout << "Enter ID to search: ";
                 cin >> id;
-                search(id);
+                h.search(id);
                 break;
 
             case 3:
-                display();
+                h.display();
                 break;
         }
-    } while (choice != 4);
+    } while(choice != 4);
 
     return 0;
 }
