@@ -1,6 +1,6 @@
 #include <iostream>
 #include <string.h>
-#include <stdlib.h>
+#include <ctype.h>
 using namespace std;
 
 struct node
@@ -10,21 +10,9 @@ struct node
     node *right;
 };
 
-class tree
-{
-    char prefix[20];
-
-public:
-    node *top;
-    void expression(char[]);
-    void display(node *);
-    void non_rec_postorder(node *);
-    void del(node *);
-};
-
 class stack1
 {
-    node *data[30];
+    node *data[100];   // Increased stack size
     int top;
 
 public:
@@ -35,57 +23,70 @@ public:
 
     int empty()
     {
-        if (top == -1)
-            return 1;
-        return 0;
+        return (top == -1);
     }
 
     void push(node *p)
     {
-        data[++top] = p;
+        if (top < 99)
+            data[++top] = p;
     }
 
     node *pop()
     {
-        return (data[top--]);
+        if (top >= 0)
+            return data[top--];
+        return NULL;
     }
+};
+
+class tree
+{
+public:
+    node *top;
+
+    void expression(char[]);
+    void display(node *);
+    void non_rec_postorder(node *);
+    void del(node *);
 };
 
 void tree::expression(char prefix[])
 {
-    char c;
     stack1 s;
     node *t1, *t2;
-    int len, i;
 
-    len = strlen(prefix);
+    int len = strlen(prefix);
 
-    for (i = len - 1; i >= 0; i--)
+    for (int i = len - 1; i >= 0; i--)
     {
-        top = new node;
-        top->left = NULL;
-        top->right = NULL;
+        node *newnode = new node;
+        newnode->left = NULL;
+        newnode->right = NULL;
 
-        if (isalpha(prefix[i]))
+        if (isalpha(prefix[i]))   // operand
         {
-            top->data = prefix[i];
-            s.push(top);
+            newnode->data = prefix[i];
+            s.push(newnode);
         }
         else if (prefix[i] == '+' || prefix[i] == '-' ||
                  prefix[i] == '*' || prefix[i] == '/')
         {
-            t2 = s.pop();
             t1 = s.pop();
-            top->data = prefix[i];
-            top->left = t2;
-            top->right = t1;
-            s.push(top);
+            t2 = s.pop();
+
+            newnode->data = prefix[i];
+            newnode->left = t1;
+            newnode->right = t2;
+
+            s.push(newnode);
         }
     }
+
     top = s.pop();
 }
 
-void tree::display(node *root)   // Preorder traversal
+void tree::display(node *root)   // Preorder
 {
     if (root != NULL)
     {
@@ -95,24 +96,25 @@ void tree::display(node *root)   // Preorder traversal
     }
 }
 
-void tree::non_rec_postorder(node *top)
+void tree::non_rec_postorder(node *root)
 {
+    if (root == NULL)
+        return;
+
     stack1 s1, s2;
     node *temp;
 
-    if (top == NULL)
-        return;
-
-    s1.push(top);
+    s1.push(root);
 
     while (!s1.empty())
     {
         temp = s1.pop();
         s2.push(temp);
 
-        if (temp->left != NULL)
+        if (temp->left)
             s1.push(temp->left);
-        if (temp->right != NULL)
+
+        if (temp->right)
             s1.push(temp->right);
     }
 
@@ -123,32 +125,31 @@ void tree::non_rec_postorder(node *top)
     }
 }
 
-void tree::del(node *node)
+void tree::del(node *root)
 {
-    if (node == NULL)
+    if (root == NULL)
         return;
 
-    del(node->left);
-    del(node->right);
+    del(root->left);
+    del(root->right);
 
-    cout << endl << "Deleting node : " << node->data;
-    free(node);
+    delete root;   // Correct deletion
 }
 
 int main()
 {
-    char expr[20];
+    char expr[100];   // Increased input size
     tree t;
 
-    cout << "Enter prefix Expression : ";
+    cout << "Enter Prefix Expression : ";
     cin >> expr;
 
     t.expression(expr);
 
-    cout << "\nExpression is : ";
+    cout << "\nPreorder Expression : ";
     t.display(t.top);
 
-    cout << "\nPostorder of the expression is : ";
+    cout << "\nPostorder Expression : ";
     t.non_rec_postorder(t.top);
 
     t.del(t.top);
