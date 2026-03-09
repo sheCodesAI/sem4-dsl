@@ -1,5 +1,9 @@
+/* Construct an expression tree from the given prefix
+   and traverse it using post order traversal and then
+   delete the entire tree */
+
 #include <iostream>
-#include <cstring>
+#include <string.h>
 #include <cstdlib>
 using namespace std;
 
@@ -23,7 +27,7 @@ public:
 
     int empty()
     {
-        if(top == -1)
+        if (top == -1)
             return 1;
         return 0;
     }
@@ -41,10 +45,12 @@ public:
 
 class tree
 {
+    char prefix[20];
+
 public:
     node *top;
 
-    void expression(char prefix[]);
+    void expression(char[]);
     void display(node *);
     void non_rec_postorder(node *);
     void del(node *);
@@ -55,20 +61,23 @@ void tree::expression(char prefix[])
 {
     stack1 s;
     node *t1, *t2;
-    int len = strlen(prefix);
 
-    for(int i=len-1;i>=0;i--)
+    int len, i;
+    len = strlen(prefix);
+
+    for (i = len - 1; i >= 0; i--)
     {
         top = new node;
         top->left = NULL;
         top->right = NULL;
 
-        if(isalpha(prefix[i]))
+        if (isalpha(prefix[i]))
         {
             top->data = prefix[i];
             s.push(top);
         }
-        else
+        else if (prefix[i] == '+' || prefix[i] == '*' ||
+                 prefix[i] == '-' || prefix[i] == '/')
         {
             t2 = s.pop();
             t1 = s.pop();
@@ -84,9 +93,9 @@ void tree::expression(char prefix[])
     top = s.pop();
 }
 
-void tree::display(node *root)
+void tree::display(node *root) // preorder
 {
-    if(root != NULL)
+    if (root != NULL)
     {
         cout << root->data;
         display(root->left);
@@ -103,29 +112,29 @@ void tree::non_rec_postorder(node *top)
 
     s1.push(T);
 
-    while(!s1.empty())
+    while (!s1.empty())
     {
         T = s1.pop();
         s2.push(T);
 
-        if(T->left != NULL)
+        if (T->left != NULL)
             s1.push(T->left);
 
-        if(T->right != NULL)
+        if (T->right != NULL)
             s1.push(T->right);
     }
 
-    while(!s2.empty())
+    while (!s2.empty())
     {
         top = s2.pop();
         cout << top->data;
     }
 }
 
-// NEW FUNCTION TO PRINT TREE
+/* FUNCTION TO PRINT EXPRESSION TREE */
 void tree::printTree(node *root, int space)
 {
-    if(root == NULL)
+    if (root == NULL)
         return;
 
     space += 5;
@@ -133,7 +142,7 @@ void tree::printTree(node *root, int space)
     printTree(root->right, space);
 
     cout << endl;
-    for(int i=5;i<space;i++)
+    for (int i = 5; i < space; i++)
         cout << " ";
 
     cout << root->data << "\n";
@@ -143,13 +152,13 @@ void tree::printTree(node *root, int space)
 
 void tree::del(node *node)
 {
-    if(node == NULL)
+    if (node == NULL)
         return;
 
     del(node->left);
     del(node->right);
 
-    cout << "\nDeleting node : " << node->data;
+    cout << endl << "Deleting node : " << node->data << endl;
     free(node);
 }
 
@@ -161,22 +170,18 @@ int main()
     cout << "Enter prefix Expression : ";
     cin >> expr;
 
-    cout << expr;
-
     t.expression(expr);
 
-    cout << "\nExpression is : ";
+    cout << "\nExpression (Preorder) : ";
     t.display(t.top);
-
-    cout << "\n\nExpression Tree Structure:\n";
-    t.printTree(t.top,0);   // CALL TREE PRINT
 
     cout << "\nPostorder of the expression is : ";
     t.non_rec_postorder(t.top);
 
+    cout << "\n\nExpression Tree:\n";
+    t.printTree(t.top, 0);   // PRINT TREE
+
     t.del(t.top);
 
-    cout << "\nTree after deletion :";
-
-    return 0;
+    cout << "\nTree deleted.";
 }
