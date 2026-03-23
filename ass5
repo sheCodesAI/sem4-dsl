@@ -1,130 +1,127 @@
 #include <iostream>
-#include <vector>
-#include <list>
 #include <queue>
-#include <stack>
-#include <string>
-#include <iomanip> // For structured output table
-
 using namespace std;
 
-// Landmark Definitions
-string landmarks[] = {"Main Building (A)", "Dnyanprasad (B)", "Cafeteria (C)", "Shantai (D)", "Smart Store (E)"};
+#define MAX 20
 
-// --- DFS Logic using 5x5 Matrix ---
-void performDFS(int matrix[5][5], int start) {
-    bool visited[5] = {false};
-    stack<int> s;
+// ---------- DFS USING ADJACENCY MATRIX ----------
+void DFS(int v, int n, int matrix[MAX][MAX],
+         string loc[], bool visited[])
+{
+    visited[v] = true;
+    cout << loc[v] << " ";
 
-    s.push(start);
-
-    cout << "\n[ EXECUTION: DFS (Adjacency Matrix) ]" << endl;
-    cout << "Path: ";
-    
-    while (!s.empty()) {
-        int curr = s.top();
-        s.pop();
-
-        if (!visited[curr]) {
-            visited[curr] = true;
-            cout << landmarks[curr];
-            
-            // Peek at the stack to see if we should print an arrow
-            bool hasNext = false;
-            for (int i = 4; i >= 0; i--) {
-                if (matrix[curr][i] == 1 && !visited[i]) {
-                    s.push(i);
-                    hasNext = true;
-                }
-            }
-            if (hasNext || !s.empty()) cout << " -> ";
+    for (int i = 0; i < n; i++)
+    {
+        if (matrix[v][i] == 1 && !visited[i])
+        {
+            DFS(i, n, matrix, loc, visited);
         }
     }
-    cout << " (End)\n";
 }
 
-// --- BFS Logic using Adjacency List ---
-void performBFS(vector<list<int>>& adjList, int start) {
-    bool visited[5] = {false};
+
+// ---------- BFS USING ADJACENCY LIST ----------
+void BFS(int start, int n, int adjList[MAX][MAX],
+         int count[], string loc[])
+{
+    bool visited[MAX] = {false};
     queue<int> q;
 
     visited[start] = true;
     q.push(start);
 
-    cout << "\n[ EXECUTION: BFS (Adjacency List) ]" << endl;
-    cout << "Path: ";
-
-    while (!q.empty()) {
-        int curr = q.front();
+    while (!q.empty())
+    {
+        int node = q.front();
         q.pop();
 
-        cout << landmarks[curr];
-        if (!q.empty() || !adjList[curr].empty()) {
-            // Logic to check if more nodes are truly left to visit for clean printing
-            bool nodesLeft = false;
-            for (int neighbor : adjList[curr]) {
-                if (!visited[neighbor]) {
-                    visited[neighbor] = true;
-                    q.push(neighbor);
-                    nodesLeft = true;
-                }
+        cout << loc[node] << " ";
+
+        for (int i = 0; i < count[node]; i++)
+        {
+            int neighbor = adjList[node][i];
+
+            if (!visited[neighbor])
+            {
+                visited[neighbor] = true;
+                q.push(neighbor);
             }
-            if (!q.empty()) cout << " -> ";
         }
     }
-    cout << " (End)\n";
 }
 
-void displayMatrix(int matrix[5][5]) {
-    cout << "\n--- CURRENT CAMPUS ADJACENCY MATRIX (5x5) ---\n";
-    cout << "    A  B  C  D  E" << endl;
-    for (int i = 0; i < 5; i++) {
-        cout << (char)('A' + i) << " | ";
-        for (int j = 0; j < 5; j++) {
-            cout << matrix[i][j] << "  ";
+
+// ---------- MAIN ----------
+int main()
+{
+    int n;
+    string loc[MAX];
+    int matrix[MAX][MAX];
+    int adjList[MAX][MAX];
+    int count[MAX] = {0};
+
+    cout << "Enter number of locations: ";
+    cin >> n;
+
+    // Input locations
+    for (int i = 0; i < n; i++)
+    {
+        cout << "Enter name of location #" << i << ": ";
+        cin >> loc[i];
+    }
+
+    // Input adjacency matrix
+    cout << "\nEnter connection (1 if connected, 0 if not):\n";
+
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = i + 1; j < n; j++)
+        {
+            cout << "Connection between "
+                 << loc[i] << " and " << loc[j] << ": ";
+
+            cin >> matrix[i][j];
+            matrix[j][i] = matrix[i][j];
         }
+        matrix[i][i] = 0;
+    }
+
+    // Display matrix
+    cout << "\nAdjacency Matrix:\n";
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+            cout << matrix[i][j] << " ";
         cout << endl;
     }
-}
 
-int main() {
-    // 1. Setup Adjacency Matrix
-    int matrix[5][5] = {
-        {0, 1, 1, 0, 0}, // A -> B, C
-        {1, 0, 0, 1, 0}, // B -> A, D
-        {1, 0, 0, 0, 1}, // C -> A, E
-        {0, 1, 0, 0, 1}, // D -> B, E
-        {0, 0, 1, 1, 0}  // E -> C, D
-    };
-
-    // 2. Setup Adjacency List
-    vector<list<int>> adjList(5);
-    adjList[0] = {1, 2}; adjList[1] = {0, 3}; adjList[2] = {0, 4};
-    adjList[3] = {1, 4}; adjList[4] = {2, 3};
-
-    int choice;
-    do {
-        cout << "\n==========================================";
-        cout << "\n   DYPCOE CAMPUS NAVIGATION SYSTEM";
-        cout << "\n==========================================";
-        cout << "\n1. View Campus Connectivity (Matrix)";
-        cout << "\n2. Explore Deeply (DFS - Matrix Method)";
-        cout << "\n3. Explore Widely (BFS - List Method)";
-        cout << "\n4. Exit";
-        cout << "\nSelect Option: ";
-        cin >> choice;
-
-        switch (choice) {
-            case 1: displayMatrix(matrix); break;
-            case 2: performDFS(matrix, 0); break;
-            case 3: performBFS(adjList, 0); break;
-            case 4: cout << "Exiting... Have a great day at DYPCOE!\n"; break;
-            default: cout << "Invalid Choice! Please try again.\n";
+    // ---------- CREATE ADJACENCY LIST ----------
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            if (matrix[i][j] == 1)
+            {
+                adjList[i][count[i]] = j;
+                count[i]++;
+            }
         }
-    } while (choice != 4);
+    }
+
+    int start;
+    cout << "\nEnter starting vertex index: ";
+    cin >> start;
+
+    // ---------- DFS ----------
+    bool visited[MAX] = {false};
+
+    cout << "\nDepth First Search (DFS) Traversal:\n";
+    DFS(start, n, matrix, loc, visited);
+
+    // ---------- BFS ----------
+    cout << "\n\nBreadth First Search (BFS) Traversal:\n";
+    BFS(start, n, adjList, count, loc);
 
     return 0;
 }
-
-
-
